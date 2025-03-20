@@ -36,6 +36,40 @@
 
 <script>
 //Your code goes here 
+	   let selectedItem = null;
+        let offsetX, offsetY;
+
+        document.querySelectorAll(".item").forEach(item => {
+            item.addEventListener("mousedown", (e) => {
+                selectedItem = item;
+                offsetX = e.clientX - item.offsetLeft;
+                offsetY = e.clientY - item.offsetTop;
+                item.style.cursor = "grabbing";
+            });
+        });
+
+        document.addEventListener("mousemove", (e) => {
+            if (!selectedItem) return;
+            let x = e.clientX - offsetX;
+            let y = e.clientY - offsetY;
+            
+            // Keep within container bounds
+            const containerRect = container.getBoundingClientRect();
+            const itemRect = selectedItem.getBoundingClientRect();
+            
+            x = Math.max(0, Math.min(containerRect.width - itemRect.width, x));
+            y = Math.max(0, Math.min(containerRect.height - itemRect.height, y));
+            
+            selectedItem.style.left = x + "px";
+            selectedItem.style.top = y + "px";
+        });
+
+        document.addEventListener("mouseup", () => {
+            if (selectedItem) {
+                selectedItem.style.cursor = "grab";
+            }
+            selectedItem = null;
+        });
 </script>
 
   </body>
