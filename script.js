@@ -1,39 +1,52 @@
-// Your code here.
-const slider = document.querySelector('.items');
-let isDown = false;
-let startX;
-let scrollLeft;
+let isDragging = false;
+let currentItem = null;
+let offsetX, offsetY;
 
-slider.addEventListener('mousedown', (e) => {
-  isDown = true;
-  slider.classList.add('active');
-  startX = e.pageX - slider.offsetLeft;
-  scrollLeft = slider.scrollLeft;
+items.forEach(item => {
+  item.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    currentItem = item;
+    offsetX = e.clientX - item.getBoundingClientRect().left;
+    offsetY = e.clientY - item.getBoundingClientRect().top;
+    item.style.transition = 'none'; // Disable transition while dragging
+  });
 });
 
-slider.addEventListener('mouseleave', () => {
-  isDown = false;
-  slider.classList.remove('active');
-});
+document.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
 
-slider.addEventListener('mouseup', () => {
-  isDown = false;
-  slider.classList.remove('active');
-});
+  const mouseX = e.clientX - offsetX;
+  const mouseY = e.clientY - offsetY;
 
-slider.addEventListener('mousemove', (e) => {
-  if (!isDown) return;
-  e.preventDefault();
-  
-  const x = e.pageX - slider.offsetLeft;
-  const walk = (x - startX) * 2; // Multiply for faster scroll speed
-  slider.scrollLeft = scrollLeft - walk;
-  
-  // Keep inside boundaries
-  if (slider.scrollLeft < 0) {
-    slider.scrollLeft = 0;
+  // Get the boundary of the container
+  const container = document.querySelector('.items');
+  const containerRect = container.getBoundingClientRect();
+
+  // Prevent dragging outside of the container's boundaries
+  const maxX = containerRect.width - currentItem.offsetWidth;
+  const maxY = containerRect.height - currentItem.offsetHeight;
+
+  // Constrain the movement of the cube within the container
+  const newX = Math.max(0, Math.min(mouseX, maxX));
+  const newY = Math.max(0, Math.min(mouseY, maxY));
+
+  currentItem.style.left = `${newX}px`;
+  currentItem.style.top = `${newY}px`;
+
+  // Scroll the container if necessary
+  if (newX <= 0) {
+    container.scrollLeft = Math.max(container.scrollLeft - 10, 0);  // Scroll left
+  } else if (newX >= maxX) {
+    container.scrollLeft = Math.min(container.scrollLeft + 10, container.scrollWidth - container.clientWidth);  // Scroll right
   }
-  if (slider.scrollLeft > slider.scrollWidth - slider.clientWidth) {
-    slider.scrollLeft = slider.scrollWidth - slider.clientWidth;
+});
+
+document.addEventListener('mouseup', () => {
+  if (!isDragging) return;
+
+  isDragging = false;
+  if (currentItem) {
+    currentItem.style.transition = 'all 0.2s'; // Re-enable transition
+    currentItem = null;
   }
 });
